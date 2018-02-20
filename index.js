@@ -11,7 +11,6 @@
 'use strict';
 
 const Alexa = require('alexa-sdk');
-const recipes = require('./recipes');
 const jsonData = require('./data.json');
 const APP_ID = undefined; // TODO replace with your app ID (OPTIONAL).
 
@@ -19,12 +18,12 @@ const languageStrings = {
     'en': {
         translation: {
             RECIPES: recipes.RECIPE_EN_US,
-            SKILL_NAME: 'Minecraft Helper',
-            WELCOME_MESSAGE: "Welcome to %s. You can ask a question like, what\'s the recipe for a chest? ... Now, what can I help you with?",
+            SKILL_NAME: 'Block Finder',
+            WELCOME_MESSAGE: "Welcome to %s. I'll help find a block set for you.",
             WELCOME_REPROMPT: 'For instructions on what you can say, please say help me.',
             DISPLAY_CARD_TITLE: '%s  - Recipe for %s.',
-            HELP_MESSAGE: "You can ask questions such as, what\'s the recipe, or, you can say exit...Now, what can I help you with?",
-            HELP_REPROMPT: "You can say things like, what\'s the recipe, or you can say exit...Now, what can I help you with?",
+            HELP_MESSAGE: "You can say recommend me a block set.",
+            HELP_REPROMPT: "You can say recommend me a block set.",
             STOP_MESSAGE: 'Goodbye!',
             RECIPE_REPEAT_MESSAGE: 'Try saying repeat.',
             RECIPE_NOT_FOUND_MESSAGE: "I\'m sorry, I currently do not know ",
@@ -74,9 +73,20 @@ const handlers = {
     },
   'RecommendationIntent': function() {
     var age = this.event.request.intent.slots.Age.value;
-    var duration = this.event.request.intent.slots.Duration.value;
-    var interests = this.event.request.intent.slots.Interests.value;
-    console.warn(age);
+    var duration = Date.parse(this.event.request.intent.slots.Duration.value);
+    var interest = this.event.request.intent.slots.Interests.value;
+
+    var slotList = { age: age, duration: duration, interest: interest};
+
+    var responseObject = findMatchRecord(slotList);
+
+    console.warn("Slots: ", slotList);
+    console.warn("Response object is:", responseObject);
+
+    var speechOutput = "I recommend " + responseObject.name;
+
+    this.attributes.speechOutput = speechOutput;
+    this.emit(':tell', speechOutput);
   },
     'RecipeIntent': function () {
         const itemSlot = this.event.request.intent.slots.Item;
