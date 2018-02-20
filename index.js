@@ -142,31 +142,7 @@ function isInAgeRange(userInputJsonObject, record) {
 exports.handler = function (event, context) {
     const alexa = Alexa.handler(event, context);
     alexa.APP_ID = APP_ID;
-    // To enable string internationalization (i18n) features, set a resources object.
     alexa.resources = languageStrings;
     alexa.registerHandlers(handlers);
     alexa.execute();
 };
-
-var slotList = [{
-    item: {
-        name: "Age",
-        value: 14
-    }
-}, {
-    item: {
-        name: "Interest",
-        value: "Star wars"
-    }
-}, {
-    item:
-        {
-            name: "Duration",
-            value: 60
-        }
-}
-];
-var userInput = getUserInput(slotList);
-console.log(JSON.stringify(userInput));
-var outputRecord = findMatchRecord(userInput);
-console.log(JSON.stringify(outputRecord));
