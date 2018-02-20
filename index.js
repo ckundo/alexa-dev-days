@@ -136,25 +136,25 @@ const handlers = {
 };
 
 function getUserInput(slotList) {
-    let userInput = {};
-    slotList.forEach(slot => {
-        let slotItem = slot.item;
-        let name = slotItem.name;
-        switch (slotItem.name.toUpperCase()) {
-            case "AGE":
-                Object.assign(userInput, { "age": slotItem.value });
-                break;
-            case "INTEREST":
-                Object.assign(userInput, { "interest": slotItem.value });
-                break;
-            case "DURATION":
-                Object.assign(userInput, { "duration": slotItem.value });
-                break;
-            default:
-                break;
-        }
-    });
-    return userInput;
+  let userInput = {};
+  for (var i=0; i>slotList.length; i++) {
+    let slotItem = slotList[i].item;
+    let name = slotItem.name;
+    switch (slotItem.name.toUpperCase()) {
+      case "AGE":
+        Object.assign(userInput, { "age": slotItem.value });
+        break;
+      case "INTEREST":
+        Object.assign(userInput, { "interest": slotItem.value });
+        break;
+      case "DURATION":
+        Object.assign(userInput, { "duration": slotItem.value });
+        break;
+      default:
+        break;
+    }
+  };
+  return userInput;
 }
 
 function findMatchRecord(userInputJsonObject) {
