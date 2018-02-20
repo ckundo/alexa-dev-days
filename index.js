@@ -75,50 +75,27 @@ const handlers = {
     var age = this.event.request.intent.slots.Age.value;
     var duration = Date.parse(this.event.request.intent.slots.Duration.value);
     var interest = this.event.request.intent.slots.Interests.value;
-
     var slotList = { age: age, duration: duration, interest: interest};
-
     var responseObject = findMatchRecord(slotList);
 
     console.warn("Slots: ", slotList);
     console.warn("Response object is:", responseObject);
 
-    var speechOutput = "I recommend " + responseObject.name;
+    if (responseObject) {
+      var speechOutput = "I recommend " + responseObject.name;
+    } else {
+      var speechOutput = this.t('RECIPE_NOT_FOUND_MESSAGE');
+      var repromptSpeech = this.t('RECIPE_NOT_FOUND_REPROMPT');
+      speechOutput += repromptSpeech;
+
+      this.attributes.speechOutput = speechOutput;
+      this.attributes.repromptSpeech = repromptSpeech;
+      this.emit(':ask', speechOutput, repromptSpeech);
+    }
 
     this.attributes.speechOutput = speechOutput;
     this.emit(':tell', speechOutput);
   },
-    'RecipeIntent': function () {
-        const itemSlot = this.event.request.intent.slots.Item;
-        let itemName;
-        if (itemSlot && itemSlot.value) {
-            itemName = itemSlot.value.toLowerCase();
-        }
-
-        const cardTitle = this.t('DISPLAY_CARD_TITLE', this.t('SKILL_NAME'), itemName);
-        const myRecipes = this.t('RECIPES');
-        const recipe = myRecipes[itemName];
-
-        if (recipe) {
-            this.attributes.speechOutput = recipe;
-            this.attributes.repromptSpeech = this.t('RECIPE_REPEAT_MESSAGE');
-            this.emit(':askWithCard', recipe, this.attributes.repromptSpeech, cardTitle, recipe);
-        } else {
-            let speechOutput = this.t('RECIPE_NOT_FOUND_MESSAGE');
-            const repromptSpeech = this.t('RECIPE_NOT_FOUND_REPROMPT');
-            if (itemName) {
-                speechOutput += this.t('RECIPE_NOT_FOUND_WITH_ITEM_NAME', itemName);
-            } else {
-                speechOutput += this.t('RECIPE_NOT_FOUND_WITHOUT_ITEM_NAME');
-            }
-            speechOutput += repromptSpeech;
-
-            this.attributes.speechOutput = speechOutput;
-            this.attributes.repromptSpeech = repromptSpeech;
-
-            this.emit(':ask', speechOutput, repromptSpeech);
-        }
-    },
     'AMAZON.HelpIntent': function () {
         this.attributes.speechOutput = this.t('HELP_MESSAGE');
         this.attributes.repromptSpeech = this.t('HELP_REPROMPT');
