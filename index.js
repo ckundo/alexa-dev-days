@@ -72,6 +72,7 @@ const handlers = {
         this.emit(':ask', this.attributes.speechOutput, this.attributes.repromptSpeech);
     },
   'RecommendationIntent': function() {
+    console.warn("duration: ", slots.Duration);
     var age = this.event.request.intent.slots.Age.value;
     var duration = Date.parse(this.event.request.intent.slots.Duration.value);
     var interest = this.event.request.intent.slots.Interests.value;
