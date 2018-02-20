@@ -12,7 +12,9 @@
 
 const Alexa = require('alexa-sdk');
 const jsonData = require('./data.json');
-const APP_ID = undefined; // TODO replace with your app ID (OPTIONAL).
+const APP_ID = process.env.APPLICATION_ID; // TODO replace with your app ID (OPTIONAL).
+var recipes = require("./recipes");
+var moment = require("moment");
 
 const languageStrings = {
     'en': {
@@ -26,22 +28,20 @@ const languageStrings = {
             HELP_REPROMPT: "You can say recommend me a block set.",
             STOP_MESSAGE: 'Goodbye!',
             RECIPE_REPEAT_MESSAGE: 'Try saying repeat.',
-            RECIPE_NOT_FOUND_MESSAGE: "I\'m sorry, I currently do not know ",
-            RECIPE_NOT_FOUND_WITH_ITEM_NAME: 'the recipe for %s. ',
-            RECIPE_NOT_FOUND_WITHOUT_ITEM_NAME: 'that recipe. ',
-            RECIPE_NOT_FOUND_REPROMPT: 'What else can I help with?',
+            NOT_FOUND_MESSAGE: "I\'m sorry, I don\'t know ",
+            NOT_FOUND_REPROMPT: 'What else can I help with?',
         },
     },
     'en-US': {
         translation: {
             RECIPES: recipes.RECIPE_EN_US,
-            SKILL_NAME: 'American Minecraft Helper',
+            SKILL_NAME: 'Block Finder',
         },
     },
     'en-GB': {
         translation: {
             RECIPES: recipes.RECIPE_EN_GB,
-            SKILL_NAME: 'British Minecraft Helper',
+            SKILL_NAME: 'Block Finder',
         },
     },
     'de': {
@@ -55,10 +55,8 @@ const languageStrings = {
             HELP_REPROMPT: 'Du kannst beispielsweise Sachen sagen wie „Wie geht das Rezept für“ oder du kannst „Beenden“ sagen ... Wie kann ich dir helfen?',
             STOP_MESSAGE: 'Auf Wiedersehen!',
             RECIPE_REPEAT_MESSAGE: 'Sage einfach „Wiederholen“.',
-            RECIPE_NOT_FOUND_MESSAGE: 'Tut mir leid, ich kenne derzeit ',
-            RECIPE_NOT_FOUND_WITH_ITEM_NAME: 'das Rezept für %s nicht. ',
-            RECIPE_NOT_FOUND_WITHOUT_ITEM_NAME: 'dieses Rezept nicht. ',
-            RECIPE_NOT_FOUND_REPROMPT: 'Womit kann ich dir sonst helfen?',
+            NOT_FOUND_MESSAGE: 'Tut mir leid, ich kenne derzeit ',
+            NOT_FOUND_REPROMPT: 'Womit kann ich dir sonst helfen?',
         },
     },
 };
@@ -72,26 +70,29 @@ const handlers = {
         this.emit(':ask', this.attributes.speechOutput, this.attributes.repromptSpeech);
     },
   'RecommendationIntent': function() {
-    console.warn("duration: ", slots.Duration);
-    var age = this.event.request.intent.slots.Age.value;
-    var duration = Date.parse(this.event.request.intent.slots.Duration.value);
-    var interest = this.event.request.intent.slots.Interests.value;
-    var slotList = { age: age, duration: duration, interest: interest};
+    console.warn("slots: ", JSON.stringify(this.event.request.intent.slots));
+    var age = parseInt(this.event.request.intent.slots.age.value);
+    var rawDuration = this.event.request.intent.slots.duration.value;
+    var duration = moment.duration(rawDuration);
+    var minutes = duration.asMinutes();
+    var interest = this.event.request.intent.slots.interest.value;
+    var slotList = { age: age, duration: minutes, interest: interest};
     var responseObject = findMatchRecord(slotList);
 
-    console.warn("Slots: ", slotList);
-    console.warn("Response object is:", responseObject);
-
     if (responseObject) {
-      var speechOutput = "I recommend " + responseObject.name;
+      var src = interest.toLowerCase() === "star wars" ? "https://s3.amazonaws.com/alexa-dev-days-block-finder/lightsaber_converted.mp3" : "https://s3.amazonaws.com/alexa-dev-days-block-finder/wizard_converted.mp3";
+      var speechOutput = `<audio src=\'${src}\' />I recommend the ${responseObject.name}`;
     } else {
-      var speechOutput = this.t('RECIPE_NOT_FOUND_MESSAGE');
-      var repromptSpeech = this.t('RECIPE_NOT_FOUND_REPROMPT');
+      var speechOutput = this.t('NOT_FOUND_MESSAGE');
+      var repromptSpeech = this.t('NOT_FOUND_REPROMPT');
       speechOutput += repromptSpeech;
 
       this.attributes.speechOutput = speechOutput;
       this.attributes.repromptSpeech = repromptSpeech;
-      this.emit(':ask', speechOutput, repromptSpeech);
+      this.response.speak(speechOutput).listen(repromptSpeech);
+      console.log("== RESPONSE ==", JSON.stringify(this.handler.response));
+      // this.emit(':ask', speechOutput, repromptSpeech);
+      this.emit(":responseReady");
     }
 
     this.attributes.speechOutput = speechOutput;

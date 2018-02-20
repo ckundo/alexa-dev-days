@@ -41,10 +41,10 @@
     },
     {
   "name" : "Millennium Falcon 75105",
-  "minAge" : 9,
+  "minAge" : 33,
   "maxAge" : 1000,
-  "minDuration" : 3,
-  "maxDuration" : 1000,
+  "minDuration" : 1000,
+  "maxDuration" : 100000000,
   "genre" : "Star Wars"
     },
     {
