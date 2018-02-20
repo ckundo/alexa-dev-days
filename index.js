@@ -72,7 +72,7 @@ const handlers = {
         this.attributes.repromptSpeech = this.t('WELCOME_REPROMPT');
         this.emit(':ask', this.attributes.speechOutput, this.attributes.repromptSpeech);
     },
-    'RecommendationIntent': function() {
+    'RecommendationIntent': function () {
         var userInputJsonObject = getUserInput(this.event.request.intent.slots);
         // slotList[0].item
         // const itemSlot = this.event.request.intent.slots.Item;
@@ -135,37 +135,46 @@ const handlers = {
     },
 };
 
-function getUserInput (slotList) {
+function getUserInput(slotList) {
     let userInput = {};
     slotList.forEach(slot => {
         let slotItem = slot.item;
         let name = slotItem.name;
-        switch(slotItem.name.toUpperCase()) {
-            case "AGE": 
-                Object.assign(userInput, { "age": slotItem.value});
-            break;
-            case "INTEREST": 
-               Object.assign(userInput, { "interest": slotItem.value});
-            break;
-            case "DURATION": 
-               Object.assign(userInput, { "duration": slotItem.value});
-            break;
+        switch (slotItem.name.toUpperCase()) {
+            case "AGE":
+                Object.assign(userInput, { "age": slotItem.value });
+                break;
+            case "INTEREST":
+                Object.assign(userInput, { "interest": slotItem.value });
+                break;
+            case "DURATION":
+                Object.assign(userInput, { "duration": slotItem.value });
+                break;
             default:
-            break;
+                break;
         }
     });
     return userInput;
 }
 
 function findMatchRecord(userInputJsonObject) {
-    // Checks against JSON and find the match for the userInput
-    jsonData.filter(record => {
-    //    return 
-       record.genre === userInputJsonObject.
-    })
-  return "Result";
+    let responseResult = jsonData.filter(record => {
+        return isValidGenre(userInputJsonObject, record) && isInDurationRange(userInputJsonObject, record) && isInAgeRange(userInputJsonObject, record)
+    });
+    return responseResult.length > 0 ? responseResult[0] : null;
 }
 
+function isValidGenre(userInputJsonObject, record) {
+    return record.genre.toUpperCase() === userInputJsonObject.interest.toUpperCase();
+}
+
+function isInDurationRange(userInputJsonObject, record) {
+    return userInputJsonObject.duration <= record.maxDuration && userInputJsonObject.duration >= record.minDuration;
+}
+
+function isInAgeRange(userInputJsonObject, record) {
+    return userInputJsonObject.age <= record.maxAge && userInputJsonObject.age >= record.minAge;
+}
 
 exports.handler = function (event, context) {
     const alexa = Alexa.handler(event, context);
@@ -178,17 +187,23 @@ exports.handler = function (event, context) {
 
 var slotList = [{
     item: {
-    name: "Age",
-    value: 13
-}}, {item: {
-    name: "Interest",
-    value: "Start wars"
-}}, {item:
-{
-    name: "Duration",
-    value: "60"
-}}
+        name: "Age",
+        value: 14
+    }
+}, {
+    item: {
+        name: "Interest",
+        value: "Star wars"
+    }
+}, {
+    item:
+        {
+            name: "Duration",
+            value: 60
+        }
+}
 ];
 var userInput = getUserInput(slotList);
 console.log(JSON.stringify(userInput));
 var outputRecord = findMatchRecord(userInput);
+console.log(JSON.stringify(outputRecord));
