@@ -72,14 +72,12 @@ const handlers = {
         this.attributes.repromptSpeech = this.t('WELCOME_REPROMPT');
         this.emit(':ask', this.attributes.speechOutput, this.attributes.repromptSpeech);
     },
-    'RecommendationIntent': function () {
-        var userInputJsonObject = getUserInput(this.event.request.intent.slots);
-        // slotList[0].item
-        // const itemSlot = this.event.request.intent.slots.Item;
-        // Age, Duration, Interest
-        //
-        //
-    },
+  'RecommendationIntent': function() {
+    var age = this.event.request.intent.slots.Age.value;
+    var duration = this.event.request.intent.slots.Duration.value;
+    var interests = this.event.request.intent.slots.Interests.value;
+    console.warn(age);
+  },
     'RecipeIntent': function () {
         const itemSlot = this.event.request.intent.slots.Item;
         let itemName;
@@ -134,28 +132,6 @@ const handlers = {
         this.emit(':ask', this.attributes.speechOutput, this.attributes.repromptSpeech);
     },
 };
-
-function getUserInput(slotList) {
-  let userInput = {};
-  for (var i=0; i>slotList.length; i++) {
-    let slotItem = slotList[i].item;
-    let name = slotItem.name;
-    switch (slotItem.name.toUpperCase()) {
-      case "AGE":
-        Object.assign(userInput, { "age": slotItem.value });
-        break;
-      case "INTEREST":
-        Object.assign(userInput, { "interest": slotItem.value });
-        break;
-      case "DURATION":
-        Object.assign(userInput, { "duration": slotItem.value });
-        break;
-      default:
-        break;
-    }
-  };
-  return userInput;
-}
 
 function findMatchRecord(userInputJsonObject) {
     let responseResult = jsonData.filter(record => {
